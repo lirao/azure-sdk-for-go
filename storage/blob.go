@@ -508,6 +508,17 @@ func (b BlobStorageClient) GetBlobURL(container, name string) string {
 	return b.client.getEndpoint(blobServiceName, pathForBlob(container, name), url.Values{})
 }
 
+// GetResourceURL gets the canonical URL to the blob or container with the specified name in the
+// specified container. This method does not create a publicly accessible URL if
+// the blob or container is private and this method does not check if the blob
+// exists.
+func (b BlobStorageClient) GetResourceURL(container, name string) string {
+	if container == "" {
+		container = "$root"
+	}
+	return b.client.getEndpoint(blobServiceName, pathForResource(container, name), url.Values{})
+}
+
 // GetBlob returns a stream to read the blob. Caller must call Close() the
 // reader to close on the underlying connection.
 //
@@ -1062,22 +1073,27 @@ func pathForContainer(name string) string {
 // helper method to construct the path to a blob given its container and blob
 // name
 func pathForBlob(container, name string) string {
-	if len(name) > 0 {
-		return fmt.Sprintf("/%s/%s", container, name)
-	}
-	return fmt.Sprintf("/%s", container)
+	return fmt.Sprintf("/%s/%s", container, name)
 }
 
-// GetBlobSASURI creates an URL to the specified blob which contains the Shared
+// helper method that does either pathForBlob or pathForContainer based on if blob name is specified
+func pathForResource(container, name string) string {
+	if len(name) > 0 {
+		return pathForBlob(container, name)
+	}
+	return pathForContainer(container)
+}
+
+// GetBlobSASURI creates an URL to the specified blob/container which contains the Shared
 // Access Signature with specified permissions and expiration time.
-//
+// If no blob name is specified, the SAS token will be valid for the entire container
 // See https://msdn.microsoft.com/en-us/library/azure/ee395415.aspx
-func (b BlobStorageClient) GetBlobSASURI(container, name string, expiry time.Time, permissions string) (string, error) {
+func (b BlobStorageClient) pathForResource(container, name string, expiry time.Time, permissions string) (string, error) {
 	var (
 		signedPermissions = permissions
-		blobURL           = b.GetBlobURL(container, name)
+		resourceURL       = b.GetBlobURL(container, name)
 	)
-	canonicalizedResource, err := b.client.buildCanonicalizedResource(blobURL)
+	canonicalizedResource, err := b.client.buildCanonicalizedResource(resourceURL)
 
 	if err != nil {
 		return "", err
@@ -1116,7 +1132,7 @@ func (b BlobStorageClient) GetBlobSASURI(container, name string, expiry time.Tim
 		"sig": {sig},
 	}
 
-	sasURL, err := url.Parse(blobURL)
+	sasURL, err := url.Parse(resourceURL)
 	if err != nil {
 		return "", err
 	}
