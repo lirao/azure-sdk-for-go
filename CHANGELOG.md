@@ -1,10 +1,121 @@
 # CHANGELOG
 
 -----
+## `v8.0.0-beta`
+### ARM
+- In addition to the tablulated changes below, all updated packages received performance
+  improvements to their Version() method.
+- Some validation that was taking place in the runtime was erroneously blocking calls.
+  all packages have been updated to take that bug fix.
+
+| api                                 | version            | note                               |
+|:------------------------------------|:-------------------|:-----------------------------------|
+| arm/analysisservices                | 2016-05-16         | update to latest swagger           |
+| arm/cdn                             | 2016-10-02         | update to latest swagger           |
+| arm/cognitiveservices               | 2016-02-01-preview | update to latest swagger           |
+| arm/compute                         | 2016-03-30         | update to latest swagger, refactor |
+| arm/containerregistry               | 2016-06-27-preview | update to latest swagger           |
+| arm/containerservice                | 2016-09-30         | update to latest swagger           |
+| arm/datalake-analytics              | 2016-11-01         | update to latest swagger           |
+| arm/datalake-store                  | 2016-11-01         | update to latest swagger           |
+| arm/disk                            | 2016-04-30-preview | new                                |
+| arm/documentdb                      | 2015-04-08         | update to latest swagger           |
+| arm/iothub                          | 2016-02-03         | update to latest swagger           |
+| arm/keyvault                        | 2015-06-01         | update to latest swagger           |
+| arm/logic                           | 2016-06-01         | update to latest swagger           |
+| arm/machinelearning                 | 2016-05-01-preview | update to latest swagger           |
+| arm/mobileengagement                | 2014-12-01         | update to latest swagger, refactor |
+| arm/redis                           | 2016-04-01         | update to latest swagger           |
+| arm/resources/locks                 | 2016-09-01         | refactor                           |
+| arm/resources/policy                | 2016-12-01         | previous version was deleted       |
+| arm/resources/resources             | 2016-09-01         | update to latest swagger, refactor |
+| arm/scheduler                       | 2016-03-01         | refactor                           |
+| arm/search                          | 2015-08-19         | refactor                           |
+| arm/web                             | 2015-08-01         | refactor                           |
+
+## `v7.0.0-beta`
+
+| api                                 | version            | note                               |
+|:------------------------------------|:-------------------|:-----------------------------------|
+| arm/analysisservices                | 2016-05-16         | new                                |
+| arm/cdn                             | 2016-10-02         | update to latest swagger           |
+| arm/commerce                        | 2015-06-01-preview | new                                |
+| arm/containerservice                | 2016-09-30         | update to latest swagger           |
+| arm/containerregistry               | 2016-06-27-preview | new                                |
+| arm/datalake-analytics/account      | 2016-11-01         | update to latest swagger           |
+| arm/datalake-store/account          | 2016-11-01         | update to latest swagger           |
+| arm/datalake-store/filesystem       | 2016-11-01         | update to latest swagger           |
+| arm/documentdb                      | 2015-04-08         | new                                |
+| arm/machinelearning/commitmentplans | 2016-05-01-preview | new                                |
+| arm/recoveryservices                | 2016-06-01         | new                                |
+| arm/resources/subscriptions         | 2016-06-01         | new                                |
+| arm/search                          | 2015-08-19         | update to latest swagger           |
+| arm/sql                             | 2014-04-01         | previous version was deleted       |
+
+### Storage
+- Can now update messages in storage queues.
+- Added support for blob snapshots and aborting blob copy operations.
+- Added support for getting and setting ACLs on containers.
+- Added various APIs for file and directory manipulation.
+
+### Support for the following swagger extensions was added to the Go generator which affected codegen.
+- x-ms-client-flatten
+- x-ms-paramater-location
+
+## `v6.0.0-beta`
+
+| api                            | version            | note                               |
+|:-------------------------------|:-------------------|:-----------------------------------|
+| arm/authorization              | no change          | code refactoring                   |
+| arm/batch                      | no change          | code refactoring                   |
+| arm/compute                    | no change          | code refactoring                   |
+| arm/containerservice           | 2016-03-30         | return                             |
+| arm/datalake-analytics/account | 2015-10-01-preview | new                                |
+| arm/datalake-store/filesystem  | no change          | moved to datalake-store/filesystem |
+| arm/eventhub                   | no change          | code refactoring                   |
+| arm/intune                     | no change          | code refactoring                   |
+| arm/iothub                     | no change          | code refactoring                   |
+| arm/keyvault                   | no change          | code refactoring                   |
+| arm/mediaservices              | no change          | code refactoring                   |
+| arm/network                    | no change          | code refactoring                   |
+| arm/notificationhubs           | no change          | code refactoring                   |
+| arm/redis                      | no change          | code refactoring                   |
+| arm/resources/resources        | no change          | code refactoring                   |
+| arm/resources/links            | 2016-09-01         | new                                |
+| arm/resources/locks            | 2016-09-01         | updated                            |
+| arm/resources/policy           | no change          | code refactoring                   |
+| arm/resources/resources        | 2016-09-01         | updated                            |
+| arm/servermanagement           | 2016-07-01-preview | updated                            |
+| arm/web                        | no change          | code refactoring                   |
+
+- storage: Added blob lease functionality and tests
+
+## `v5.0.0-beta`
+
+| api                           | version             | note             |
+|:------------------------------|:--------------------|:-----------------|
+| arm/network                   | 2016-09-01          | updated          |
+| arm/servermanagement          | 2015-07-01-preview  | new              |
+| arm/eventhub                  | 2015-08-01          | new              |
+| arm/containerservice          | --                  | removed          |
+| arm/resources/subscriptions   | no change           | code refactoring |
+| arm/resources/features        | no change           | code refactoring |
+| arm/resources/resources       | no change           | code refactoring |
+| arm/datalake-store/accounts   | no change           | code refactoring |
+| arm/datalake-store/filesystem | no change           | code refactoring |
+| arm/notificationhubs          | no change           | code refactoring |
+| arm/redis                     | no change           | code refactoring |
+
+- storage: Add more file storage share operations.
+- azure-rest-api-specs/commit/b8cdc2c50a0872fc0039f20c2b6b33aa0c2af4bf
+- Uses go-autorest v7.2.1
+
 ## `v4.0.0-beta`
+
 - arm/logic: breaking change in package logic.
 - arm: parameter validation code added in all arm packages.
 - Uses go-autorest v7.2.0.
+
 
 ## `v3.2.0-beta`
 
@@ -24,6 +135,7 @@
 - storage: add SetBlobProperties(), update BlobProperties response fields.
 - storage: make storage client work correctly with read-only secondary account.
 - storage: add Azure Storage Emulator support.
+
 
 ## `v3.1.0-beta`
 
