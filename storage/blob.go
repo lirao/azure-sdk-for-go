@@ -640,6 +640,16 @@ func (b BlobStorageClient) GetBlobURL(container, name string) string {
 	return b.client.getEndpoint(blobServiceName, pathForBlob(container, name), url.Values{})
 }
 
+// GetContainerURL gets the canonical URL to the container with the specified name.
+// This method does not create a publicly accessible URL if the blob or container
+// is private and this method does not check if the blob exists.
+func (b BlobStorageClient) GetContainerURL(container string) string {
+	if container == "" {
+		container = "$root"
+	}
+	return b.client.getEndpoint(blobServiceName, pathForContainer(container), url.Values{})
+}
+
 // GetBlob returns a stream to read the blob. Caller must call Close() the
 // reader to close on the underlying connection.
 //
@@ -1415,18 +1425,30 @@ func pathForBlob(container, name string) string {
 	return fmt.Sprintf("/%s/%s", container, name)
 }
 
-// GetBlobSASURIWithSignedIPAndProtocol creates an URL to the specified blob which contains the Shared
+// GetBlobSASURIWithSignedIPAndProtocol is a blob-only wrapper around GetSASURIWithSignedIPAndProtocol
+func (b BlobStorageClient) GetBlobSASURIWithSignedIPAndProtocol(container, name string, expiry time.Time, permissions string, signedIPRange string, HTTPSOnly bool) (string, error) {
+	return b.GetSASURIWithSignedIPAndProtocol(container, name, expiry, permissions, signedIPRange, HTTPSOnly, false)
+}
+
+// GetSASURIWithSignedIPAndProtocol creates an URL to the specified blob or container which contains the Shared
 // Access Signature with specified permissions and expiration time. Also includes signedIPRange and allowed protocols.
 // If old API version is used but no signedIP is passed (ie empty string) then this should still work.
 // We only populate the signedIP when it non-empty.
 //
 // See https://msdn.microsoft.com/en-us/library/azure/ee395415.aspx
-func (b BlobStorageClient) GetBlobSASURIWithSignedIPAndProtocol(container, name string, expiry time.Time, permissions string, signedIPRange string, HTTPSOnly bool) (string, error) {
-	var (
-		signedPermissions = permissions
-		blobURL           = b.GetBlobURL(container, name)
-	)
-	canonicalizedResource, err := b.client.buildCanonicalizedResource(blobURL, b.auth)
+func (b BlobStorageClient) GetSASURIWithSignedIPAndProtocol(container, name string, expiry time.Time, permissions string, signedIPRange string, HTTPSOnly, isContainer bool) (string, error) {
+
+	signedPermissions := permissions
+	var resourceURL, signedResource string
+	if isContainer {
+		resourceURL = b.GetContainerURL(container)
+		signedResource = "c"
+	} else {
+		resourceURL = b.GetBlobURL(container, name)
+		signedResource = "b"
+	}
+
+	canonicalizedResource, err := b.client.buildCanonicalizedResource(resourceURL, b.auth)
 	if err != nil {
 		return "", err
 	}
@@ -1444,7 +1466,6 @@ func (b BlobStorageClient) GetBlobSASURIWithSignedIPAndProtocol(container, name 
 	}
 
 	signedExpiry := expiry.UTC().Format(time.RFC3339)
-	signedResource := "b"
 
 	protocols := "https,http"
 	if HTTPSOnly {
@@ -1471,7 +1492,7 @@ func (b BlobStorageClient) GetBlobSASURIWithSignedIPAndProtocol(container, name 
 		}
 	}
 
-	sasURL, err := url.Parse(blobURL)
+	sasURL, err := url.Parse(resourceURL)
 	if err != nil {
 		return "", err
 	}
@@ -1484,7 +1505,16 @@ func (b BlobStorageClient) GetBlobSASURIWithSignedIPAndProtocol(container, name 
 //
 // See https://msdn.microsoft.com/en-us/library/azure/ee395415.aspx
 func (b BlobStorageClient) GetBlobSASURI(container, name string, expiry time.Time, permissions string) (string, error) {
-	url, err := b.GetBlobSASURIWithSignedIPAndProtocol(container, name, expiry, permissions, "", false)
+	url, err := b.GetSASURIWithSignedIPAndProtocol(container, name, expiry, permissions, "", false, false)
+	return url, err
+}
+
+// GetBlobSASURI creates an URL to the specified blob which contains the Shared
+// Access Signature with specified permissions and expiration time.
+//
+// See https://msdn.microsoft.com/en-us/library/azure/ee395415.aspx
+func (b BlobStorageClient) GetContainerSASURI(container string, expiry time.Time, permissions string) (string, error) {
+	url, err := b.GetSASURIWithSignedIPAndProtocol(container, "", expiry, permissions, "", false, true)
 	return url, err
 }
 
